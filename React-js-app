@@ -1,0 +1,41 @@
+pipeline {
+    agent any
+    tools{
+        nodejs 'nodejs'
+    }
+    environment {
+        // Define environment variables for S3 bucket and AWS credentials
+        S3_BUCKET = 'arbaaz-s3-bucket-d3bf92ea3867ab07'
+        AWS_REGION = 'ap-south-1'
+    }
+    stages {
+        stage('Git Checkout') {
+            steps {
+                git url: "https://github.com/arbaazahmad16/react-js-app", branch: "main"
+            }
+        }
+        stage('NPM Installt') {
+            steps {
+                sh "npm install"
+            }
+        }
+        stage('Node Build') {
+            steps {
+                sh "npm run build"
+            }
+        }
+        stage('S3 Deploy') {
+            steps {
+                sh "aws s3 sync dist/ s3://${S3_BUCKET} --delete"
+            }
+        }
+    }
+    post {
+        success {
+            echo 'Deployment to S3 was successful!'
+        }
+        failure {
+            echo 'Deployment failed.'
+        }
+    }
+}
